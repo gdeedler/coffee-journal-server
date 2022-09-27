@@ -29,5 +29,17 @@ module.exports = {
     `)
     res.status(200);
     res.send(coffees.rows);
+  },
+  getBrews: async (req, res) => {
+    const userId = req.query.userId;
+    const coffeeId = req.query.coffeeId;
+    const brews = await db.query(`
+    SELECT b.rating, b.dose, b.method, b.date
+    FROM brews b
+    WHERE b.coffee_id = $1 AND b.user_id = $2
+    ORDER BY b.date ASC;
+    `, [coffeeId, userId])
+    res.status(200);
+    res.send(brews.rows);
   }
 }

@@ -27,6 +27,7 @@ app.get('/coffees', (req, res) => {
   routes.getAll(req, res);
 })
 app.get('/:userid/coffees', routes.getUserCoffees);
+app.get('/brews', routes.getBrews);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
