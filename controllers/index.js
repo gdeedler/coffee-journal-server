@@ -3,18 +3,30 @@ const db = require('../db')
 module.exports = {
   getAll: async (req, res) => {
     const coffees = await db.query(`
-    SELECT c.name, c.country, c.region, c.producer, c.elevation, c.process, c.roaster, array_agg(n.note) AS notes
-    FROM coffees c
-    INNER JOIN notes n
-    ON n.coffee_id = c.coffee_id
-    GROUP BY c.coffee_id
-    ORDER BY c.name ASC;`);
+      SELECT c.coffee_id, c.name, c.country, c.region, c.producer, c.elevation, c.process, c.roaster, array_agg(n.note) AS notes
+      FROM coffees c
+      INNER JOIN notes n
+      ON n.coffee_id = c.coffee_id
+      GROUP BY c.coffee_id
+      ORDER BY c.name ASC;
+    `);
     res.status(200);
     res.send(coffees.rows);
   },
+  getOneCoffee: async (req, res) => {
+    const coffee = await db.query(`
+      SELECT c.coffee_id, c.name, c.country, c.region, c.producer, c.elevation, c.process, c.roaster, array_agg(n.note) AS notes
+      FROM coffees c
+      INNER JOIN notes n
+      ON n.coffee_id = c.coffee_id
+      WHERE c.coffee_id = $1
+      GROUP BY c.coffee_id
+    `, [req.params.coffeeId])
+    res.status(200);
+    res.send(coffee.rows);
+  },
   getUserCoffees: async (req, res) => {
     const userId = req.params.userid;
-    console.log('Get coffees', userId);
     const coffees = await db.query(`
     SELECT c.coffee_id, c.name, c.country, c.region, c.producer, c.elevation, c.process, c.roaster, array_agg(n.note) AS notes
     FROM coffees c
@@ -41,5 +53,31 @@ module.exports = {
     `, [coffeeId, userId])
     res.status(200);
     res.send(brews.rows);
+  },
+  addBrew: async (req, res) => {
+    const userId = req.params.userId;
+    const {rating, dose, method, coffeeId} = req.body;
+    const response = await db.query(`
+      INSERT INTO brews (coffee_id, rating, dose, method, user_id)
+      VALUES ($1, $2, $3, $4, $5)
+    `, [coffeeId, rating, dose, method, userId])
+    console.log(response);
+    res.sendStatus(300);
+  },
+  addCoffee: async (req, res) => {
+    const userId = req.params.userId;
+    const coffeeId = req.body.coffee_id;
+    const response = await db.query(`
+      SELECT *
+      FROM coffees_users cu
+      WHERE cu.coffee_id = $1 AND cu.user_id = $2
+    `,[coffeeId, userId])
+    if(response.rows.length === 0) {
+      await db.query(`
+        INSERT INTO coffees_users (coffee_id, user_id)
+        VALUES ($1, $2)
+      `, [coffeeId, userId]);
+    }
+    res.sendStatus(300);
   }
 }

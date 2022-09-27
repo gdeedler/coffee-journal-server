@@ -22,12 +22,17 @@ const PATH = path.join(__dirname, 'dist');
 app.use(express.static(path.join(__dirname, 'dist')))
 app.use(morgan('dev'));
 app.use(cors());
+app.use(express.json());
 
 app.get('/coffees', (req, res) => {
   routes.getAll(req, res);
 })
+app.get('/coffees/:coffeeId', routes.getOneCoffee);
 app.get('/:userid/coffees', routes.getUserCoffees);
 app.get('/brews', routes.getBrews);
+
+app.post('/brews/:userId', routes.addBrew);
+app.post('/:userId/coffees', routes.addCoffee);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
