@@ -16,7 +16,7 @@ const checkJwt = auth({
 
 const PATH = path.join(__dirname, 'dist');
 
-app.use(express.static(path.join(__dirname, '../mvp/dist')));
+app.use(express.static(path.join(__dirname, './dist')));
 app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
@@ -40,6 +40,7 @@ app.get('/api/journal/coffees', checkJwt, routes.getUserCoffees)
 app.get('/api/brews',checkJwt, routes.getBrews);
 app.post('/api/brews/',checkJwt, routes.addBrew);
 app.post('/api/coffees',checkJwt, routes.addCoffee);
+app.delete('/api/journal/coffees/:coffeeId', checkJwt, routes.deleteCoffee);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

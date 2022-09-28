@@ -98,5 +98,18 @@ module.exports = {
       VALUES ($1)
     `, [userId])
     res.sendStatus(201);
+  },
+  deleteCoffee: async (req, res) => {
+    await db.query(`
+      DELETE FROM coffees_users
+      WHERE coffee_id = $1
+      AND user_id = $2
+    `,[req.params.coffeeId + '', req.userId])
+    await db.query(`
+      DELETE FROM brews
+      WHERE coffee_id = $1
+      AND user_id = $2
+    `,[req.params.coffeeId + '', req.userId])
+    res.sendStatus(204);
   }
 }
