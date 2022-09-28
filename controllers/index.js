@@ -46,7 +46,7 @@ module.exports = {
     const userId = req.userId;
     const coffeeId = req.query.coffeeId;
     const brews = await db.query(`
-    SELECT b.rating, b.dose, b.method, b.date
+    SELECT b.rating, b.dose, b.method, b.date, b.bitter_sour
     FROM brews b
     WHERE b.coffee_id = $1 AND b.user_id = $2
     ORDER BY b.date ASC;
@@ -56,11 +56,11 @@ module.exports = {
   },
   addBrew: async (req, res) => {
     const userId = req.userId;
-    const {rating, dose, method, coffeeId} = req.body;
+    const {rating, dose, method, coffeeId, bitter_sour} = req.body;
     const response = await db.query(`
-      INSERT INTO brews (coffee_id, rating, dose, method, user_id)
-      VALUES ($1, $2, $3, $4, $5)
-    `, [coffeeId, rating, dose, method, userId])
+      INSERT INTO brews (coffee_id, rating, dose, method, user_id, bitter_sour)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `, [coffeeId, rating, dose, method, userId, bitter_sour])
     console.log(response);
     res.sendStatus(201);
   },
