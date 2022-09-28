@@ -7,6 +7,9 @@ module.exports = {
       FROM coffees c
       INNER JOIN notes n
       ON n.coffee_id = c.coffee_id
+      LEFT JOIN coffees_users cu
+      ON c.coffee_id = cu.coffee_id
+      WHERE cu.user_id IS NULL
       GROUP BY c.coffee_id
       ORDER BY c.name ASC;
     `);
