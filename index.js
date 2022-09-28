@@ -3,37 +3,44 @@ const morgan = require('morgan');
 const path = require('path');
 const routes = require('./controllers');
 const cors = require('cors');
-const {auth} = require('express-openid-connect')
+const { auth, requiredScopes } = require('express-oauth2-jwt-bearer');
+const jwt = require('jsonwebtoken')
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.port || 3000;
-const config = {
-  authRequired: false,
-  auth0Logout: true,
-  secret: process.env.SECRET,
-  baseURL: 'http://localhost:3000',
-  clientID: 'rLk9JttgMDBldhp0H4Nz9j1JUj7Anm8z',
-  issuerBaseURL: 'https://dev-1mdmd8kt.us.auth0.com'
-}
+const checkJwt = auth({
+  audience:'Coffee',
+  issuerBaseURL: `https://dev-1mdmd8kt.us.auth0.com/`,
+})
 
 const PATH = path.join(__dirname, 'dist');
 
-app.use(express.static(path.join(__dirname, 'dist')))
+app.use(express.static(path.join(__dirname, '../mvp/dist')));
 app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
-
-app.get('/coffees', (req, res) => {
-  routes.getAll(req, res);
+app.use((req, res, next) => {
+  let token = req.headers.authorization;
+  if(token) {
+    let decoded = jwt.decode(token.replace('Bearer ', '')).sub
+    decoded = decoded.split('|')[1];
+    req.userId = Number(decoded);
+  }
+  next();
 })
-app.get('/coffees/:coffeeId', routes.getOneCoffee);
-app.get('/:userid/coffees', routes.getUserCoffees);
-app.get('/brews', routes.getBrews);
 
-app.post('/brews/:userId', routes.addBrew);
-app.post('/:userId/coffees', routes.addCoffee);
+app.get('/api/coffees', checkJwt, (req, res) => {
+  routes.getAll(req, res);
+});
+app.get('/api/auth', checkJwt, routes.addUser);
+app.get('/api/coffees/:coffeeId', checkJwt, routes.getOneCoffee);
+app.get('/api/coffees', routes.getAll);
+app.get('/api/journal/coffees', checkJwt, routes.getUserCoffees)
+app.get('/api/brews',checkJwt, routes.getBrews);
+app.post('/api/brews/',checkJwt, routes.addBrew);
+app.post('/api/coffees',checkJwt, routes.addCoffee);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
-})
+});

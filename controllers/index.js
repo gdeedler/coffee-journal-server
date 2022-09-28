@@ -26,7 +26,7 @@ module.exports = {
     res.send(coffee.rows);
   },
   getUserCoffees: async (req, res) => {
-    const userId = req.params.userid;
+    const userId = req.userId;
     const coffees = await db.query(`
     SELECT c.coffee_id, c.name, c.country, c.region, c.producer, c.elevation, c.process, c.roaster, array_agg(n.note) AS notes
     FROM coffees c
@@ -43,7 +43,7 @@ module.exports = {
     res.send(coffees.rows);
   },
   getBrews: async (req, res) => {
-    const userId = req.query.userId;
+    const userId = req.userId;
     const coffeeId = req.query.coffeeId;
     const brews = await db.query(`
     SELECT b.rating, b.dose, b.method, b.date
@@ -55,17 +55,17 @@ module.exports = {
     res.send(brews.rows);
   },
   addBrew: async (req, res) => {
-    const userId = req.params.userId;
+    const userId = req.userId;
     const {rating, dose, method, coffeeId} = req.body;
     const response = await db.query(`
       INSERT INTO brews (coffee_id, rating, dose, method, user_id)
       VALUES ($1, $2, $3, $4, $5)
     `, [coffeeId, rating, dose, method, userId])
     console.log(response);
-    res.sendStatus(300);
+    res.sendStatus(201);
   },
   addCoffee: async (req, res) => {
-    const userId = req.params.userId;
+    const userId = req.userId;
     const coffeeId = req.body.coffee_id;
     const response = await db.query(`
       SELECT *
@@ -78,6 +78,22 @@ module.exports = {
         VALUES ($1, $2)
       `, [coffeeId, userId]);
     }
-    res.sendStatus(300);
+    res.sendStatus(201);
+  },
+  addUser: async (req, res) => {
+    const userId = req.userId;
+    let userExists = await db.query(`
+      SELECT * FROM users
+      WHERE user_id = $1
+    `, [userId]);
+    if(userExists.rows.length > 0) {
+      res.sendStatus(200);
+      return;
+    }
+    const response = await db.query(`
+      INSERT INTO users (user_id)
+      VALUES ($1)
+    `, [userId])
+    res.sendStatus(201);
   }
 }
