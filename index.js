@@ -14,7 +14,6 @@ const checkJwt = auth({
   issuerBaseURL: `https://dev-1mdmd8kt.us.auth0.com/`,
 })
 
-const PATH = path.join(__dirname, 'dist');
 
 app.use(express.static(path.join(__dirname, './dist')));
 app.use(morgan('dev'));
