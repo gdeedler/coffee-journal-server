@@ -30,14 +30,12 @@ app.use((req, res, next) => {
   next();
 })
 
-app.get('/api/coffees', checkJwt, (req, res) => {
-  routes.getAll(req, res);
-});
 app.get('/api/auth', checkJwt, routes.addUser);
 app.get('/api/coffees/:coffeeId', checkJwt, routes.getOneCoffee);
 app.get('/api/coffees', routes.getAll);
 app.get('/api/journal/coffees', checkJwt, routes.getUserCoffees)
 app.get('/api/brews',checkJwt, routes.getBrews);
+app.get('/api/brews/all', checkJwt, routes.getAllBrews);
 app.post('/api/brews/',checkJwt, routes.addBrew);
 app.post('/api/coffees',checkJwt, routes.addCoffee);
 app.delete('/api/journal/coffees/:coffeeId', checkJwt, routes.deleteCoffee);

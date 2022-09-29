@@ -7,12 +7,10 @@ module.exports = {
       FROM coffees c
       INNER JOIN notes n
       ON n.coffee_id = c.coffee_id
-      LEFT JOIN coffees_users cu
-      ON c.coffee_id = cu.coffee_id
-      WHERE cu.user_id IS NULL
+      WHERE c.coffee_id NOT IN (select coffee_id from coffees_users where user_id = $1)
       GROUP BY c.coffee_id
       ORDER BY c.name ASC;
-    `);
+    `,[req.userId]);
     res.status(200);
     res.send(coffees.rows);
   },
@@ -39,8 +37,7 @@ module.exports = {
     ON c.coffee_id = cu.coffee_id
     INNER JOIN users u
     ON cu.user_id = u.user_id
-    GROUP BY c.coffee_id
-    ORDER BY c.name ASC;
+    GROUP BY c.coffee_id;
     `)
     res.status(200);
     res.send(coffees.rows);
@@ -54,6 +51,14 @@ module.exports = {
     WHERE b.coffee_id = $1 AND b.user_id = $2
     ORDER BY b.date ASC;
     `, [coffeeId, userId])
+    res.status(200);
+    res.send(brews.rows);
+  },
+  getAllBrews: async (req, res) => {
+    const brews = await db.query(`
+      SELECT b.rating, b.dose, b.method, b.date, b.bitter_sour, b.coffee_id
+      FROM brews b
+      WHERE b.user_id = $1`, [req.userId])
     res.status(200);
     res.send(brews.rows);
   },
